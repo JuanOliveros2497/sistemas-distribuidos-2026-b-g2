@@ -10,7 +10,7 @@
 - FULL_NAME: Juan Esteban Oliveros Duran
 - GITHUB_USER: JuanOliveros2497
 - TEAM: pms-properties
-- SPRINT_GOAL: Harden the local orchestration of the three microservices with Docker Compose: real healthchecks, deterministic startup order via condition: service_healthy, and per-environment configuration overrides (dev/prod).
+- SPRINT_GOAL: Harden the local orchestration of the three microservices with Docker Compose (real healthchecks, deterministic startup order, per-environment overrides), and plan the environment strategy, configuration matrix, and branch-to-environment mapping for MVP2.
 <!-- CONFIG-END -->
 
 ## 1. User stories worked this week
@@ -21,37 +21,43 @@
 | HU-INFRA-005 | Add healthchecks to all microservices and gate startup with depends_on: condition: service_healthy | done                     | Not added yet               |
 | HU-INFRA-006 | Split configuration into docker-compose.override.yml (dev) and compose.prod.yml (prod)             | done                     | Not added yet               |
 | HU-INFRA-007 | Add curl to each service's runtime image to support HTTP healthchecks                              | done                     | Not added yet               |
+| HU-ORQ-001   | All services start with a single docker compose up gated by healthchecks                           | done                     | Not added yet               |
+| HU-ORQ-002   | Configuration is read from the environment in every service (no hardcoded values)                  | doing                    | Not added yet               |
+| HU-ORQ-003   | QA environment runs the same images as development, only configuration differs                     | todo                     | Not added yet               |
+| HU-ORQ-004   | Documented configuration matrix (variable names + values per environment) added to the repo        | doing                    | Not added yet               |
+| HU-ORQ-005   | Each service validates required environment variables at startup                                   | todo                     | Not added yet               |
 
 ## 2. My individual contribution
 
-- Updated `docker-compose.yml` to add a real `healthcheck` for each database: `pg_isready` for `booking-db` and `payment-db` (PostgreSQL), and `mongosh --eval "db.adminCommand('ping')"` for `catalog-db` (MongoDB).
-- Replaced the simple `depends_on` list with `depends_on: { <db>: { condition: service_healthy } }` for all three microservices, so each service waits for its database to be truly ready, not just started.
-- Added HTTP healthchecks (`curl -f http://localhost:<port>/health`) to `booking-service`, `payment-service`, and `catalog-service`, reusing the `/health` endpoint built in the Week 04 walking skeleton.
-- Created `docker-compose.override.yml` for local development (sets `SPRING_PROFILES_ACTIVE=dev` per service, applied automatically with `docker-compose up`).
-- Created `compose.prod.yml` for production (sets `SPRING_PROFILES_ACTIVE=prod` and resource limits, applied explicitly with `-f`), keeping all credentials external via environment variables — nothing hardcoded.
-- Updated each service's `Dockerfile` to install `curl` in the runtime stage (`eclipse-temurin:21-jre` does not include it by default), required for the service-level healthcheck to work.
-- Verified locally that `docker-compose up --build` starts databases first, waits for them to report `healthy`, and only then starts the dependent microservices — eliminating the previous race condition where a service could fail to connect to a database that was "started" but not yet accepting connections.
+- Updated `docker-compose.yml` to add real healthchecks for each database (`pg_isready` for PostgreSQL, `mongosh` ping for MongoDB) and changed `depends_on` to `condition: service_healthy` for all three microservices, eliminating the previous race condition between "container started" and "database actually ready".
+- Added HTTP healthchecks to `booking-service`, `payment-service`, and `catalog-service` against their `/health` endpoint, and updated each `Dockerfile` to install `curl` in the runtime stage.
+- Created `docker-compose.override.yml` (development) and `compose.prod.yml` (production) to separate per-environment configuration from the base compose file, following the "build once, promote the artifact" principle.
+- Defined the three environments for the project (develop, qa, prod) and drafted a configuration matrix documenting variable names (`SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD`, `SPRING_PROFILES_ACTIVE`, `LOG_LEVEL`) that stay consistent across environments, with only their values changing per environment.
+- Reviewed the current branching model (everything committed directly to `main`) against the expected per-environment branch flow (`hu-xxx-dev` → `develop`, `hu-xxx-qa` → `qa`, `hu-xxx-main` → `main`), and flagged this as a gap to close before MVP2.
+- Broke down the MVP2 orchestration work into five testable user stories (HU-ORQ-001 to HU-ORQ-005) covering healthcheck-gated startup, environment-based configuration, image promotion across environments, a documented configuration matrix, and startup-time validation of required variables.
 
 ## 3. Blockers and risks
 
-- Healthchecks are configured but not yet validated against a fully implemented `/health` endpoint in `payment-service` and `catalog-service` (only `booking-service` has it built so far from the Week 04 skeleton) — risk that their healthchecks fail until those endpoints exist.
-- `compose.prod.yml` resource limits (`memory: 512M`) are placeholder values, not yet based on real load testing.
-- Still pending: deciding whether production deployment will remain single-host Compose for the MVP1 release, or require moving to an orchestrator (Kubernetes) — out of scope for now per the session's guidance ("Compose is fine for a single host; move to an orchestrator only when you need multiple hosts, self-healing, rolling updates or autoscaling").
+- The team currently works directly on `main` with no `develop`/`qa` branches — this does not yet match the per-environment branch-to-environment mapping expected for MVP2, and will require a process change communicated to the whole team.
+- QA and production environments (databases, hosts, secret storage) are not provisioned yet — the configuration matrix is defined on paper, but there is nothing to promote the image to outside of local development.
+- No secret manager (Vault, AWS Secrets Manager, etc.) has been chosen yet for qa/prod; secrets currently only have a local `.env` workflow defined.
+- `/health` endpoints for `payment-service` and `catalog-service` are still pending, which blocks validating HU-ORQ-001 end-to-end for those two services.
 
 ## 4. Plan for next week
 
-- Build the `/health` endpoints for `payment-service` and `catalog-service` so all three service-level healthchecks actually pass.
-- Run a full `docker-compose up --build` in CI (not just locally) to confirm the deterministic startup order holds outside a developer machine.
-- Begin wiring the MVP1 vertical slice (`POST /reservas`) end-to-end on top of this now-hardened orchestration setup.
+- Provision a QA environment (even a minimal one) and validate that the exact same Docker image built for development runs there with only configuration changes (HU-ORQ-003).
+- Add startup-time validation for required environment variables in each service, so missing configuration fails fast with a clear error (HU-ORQ-005).
+- Introduce `develop` and `qa` branches and align the team's Git workflow with the per-environment branch model.
+- Finalize and commit the configuration matrix document (`config-matrix.md`) to the repo, keeping it in sync with `.env.example`.
 
 ## 5. Compliance self-check
 
 - [ ] Conventional Commits - `type(scope): summary`
-- [ ] Per-environment HU branch + PR to that environment (hu-xxx-dev -> develop, ...) — N/A, work done directly on `main` this week
-- [x] Testable acceptance criteria — verifiable via `docker-compose up --build`: databases must reach `healthy` before dependent services start
-- [ ] Tests added/updated (unit / integration) — N/A, infrastructure/orchestration work, no application code changed
-- [ ] DDD / hexagonal boundaries respected (domain has no I/O) — N/A, purely Docker Compose / infrastructure work
-- [x] No secrets; config via environment variables — all credentials remain in `.env` / `.env.example`; `compose.prod.yml` only sets non-sensitive profile and resource values
+- [ ] Per-environment HU branch + PR to that environment (hu-xxx-dev -> develop, ...) — not yet in place; identified as a gap this week, still working directly on `main`
+- [x] Testable acceptance criteria — defined for all five HU-ORQ stories (e.g. HU-ORQ-001: `docker-compose up --build` starts databases first, waits for healthy, then starts services)
+- [ ] Tests added/updated (unit / integration) — N/A, infrastructure/orchestration and planning work, no application code changed
+- [ ] DDD / hexagonal boundaries respected (domain has no I/O) — N/A, purely Docker Compose / infrastructure and environment planning work
+- [x] No secrets; config via environment variables — configuration matrix confirms variable names stay consistent across environments while values are injected per environment, never hardcoded
 
 ## 6. Evidence links
 
