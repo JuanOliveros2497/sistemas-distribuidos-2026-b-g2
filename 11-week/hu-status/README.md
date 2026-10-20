@@ -18,21 +18,26 @@
 | W11-CP2 | JSON log contract for Catalog with search and event fields | done | https://github.com/JuanOliveros2497/sistemas-distribuidos-2026-b-g2/blob/main/11-week/workshop/02-log-contract.md |
 | W11-CP3 | Python middleware, logger, trace in the Mongo query comment and `/metrics` | done | https://github.com/JuanOliveros2497/sistemas-distribuidos-2026-b-g2/tree/main/11-week/workshop/03-instrumentation |
 | W11-CP4 | Golden signals for gateway, Catalog, its consumer and MongoDB | done | https://github.com/JuanOliveros2497/sistemas-distribuidos-2026-b-g2/blob/main/11-week/workshop/04-metrics.md |
-| W11-CP6..CP9 | SLOs, alerts, runbook and incident drill | todo | — |
+| W11-CP6 | SLOs of the search: answers, speed and freshness of availability | done | https://github.com/JuanOliveros2497/sistemas-distribuidos-2026-b-g2/blob/main/11-week/workshop/05-slo.md |
+| W11-CP7 | Burn-rate alerts for Catalog and the alerts we chose not to create | done | https://github.com/JuanOliveros2497/sistemas-distribuidos-2026-b-g2/blob/main/11-week/workshop/06-alerts.yml |
+| W11-CP8 | Runbook of `CatalogSearchFastBurn` | done | https://github.com/JuanOliveros2497/sistemas-distribuidos-2026-b-g2/blob/main/11-week/workshop/07-runbook.md |
+| W11-CP9 | Drill: MongoDB slow under the search, with postmortem and three stories | done | https://github.com/JuanOliveros2497/sistemas-distribuidos-2026-b-g2/blob/main/11-week/workshop/08-incident.md |
 
 ## 2. My individual contribution
 - Mapped the search journey and how the trace crosses from Booking to Catalog through the outbox and RabbitMQ.
 - Defined the log contract of Catalog, with `event_id` and `delivery_attempt` for the consumer.
 - Wrote and tested a Python module of `catalog-service` that carries the `trace_id` into the MongoDB query.
 - Wrote the metric catalog, with the labels that must stay out (city, property id).
+- Set three SLOs for the search (one of them for how fresh the availability is), their burn-rate alerts and the runbook of the page.
+- Ran a drill where MongoDB slows down; the postmortem found that a re-seed can drop the indexes, and turned it into three user stories.
 
 ## 3. Blockers and risks
 - Catalog is not built yet; the module runs on in-memory data.
 - The outbox of Booking must store `traceparent` so the consumer keeps the same trace.
 
 ## 4. Plan for next week
-- Delivery 2 of the workshop (CP6 to CP10).
-- Corte 3: real `catalog-service` with FastAPI and MongoDB.
+- Corte 3: real `catalog-service` with FastAPI and MongoDB, with the middleware and logger of CP3.
+- Fix the seed of `property-catalog-db` so it always creates the indexes (postmortem story 1).
 
 ## 5. Compliance self-check
 - [x] Conventional Commits - `type(scope): summary`
