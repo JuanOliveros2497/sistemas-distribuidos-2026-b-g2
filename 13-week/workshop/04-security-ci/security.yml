@@ -43,5 +43,5 @@ jobs:
       - name: Gate 3 - GET /api/v1/pagos/{id} must reject anonymous and unsigned tokens
         run: |
           cp proposal/13-week/workshop/04-security-ci/PagoAuthorizationNegativeTest.java \
-            payment-app/src/test/java/co/edu/corhuila/property/payment/
+            payment-app/src/test/java/co/edu/corhuila/property/payment/app/
           mvn -B -pl payment-app -am -Dtest=PagoAuthorizationNegativeTest -Dsurefire.failIfNoSpecifiedTests=false verify

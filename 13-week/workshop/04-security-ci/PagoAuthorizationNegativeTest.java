@@ -1,4 +1,4 @@
-package co.edu.corhuila.property.payment;
+package co.edu.corhuila.property.payment.app;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -19,7 +19,7 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 // Story: [security] A Pago is read only by its owner (STRIDE E).
-@SpringBootTest(classes = PaymentApplication.class)
+@SpringBootTest
 @AutoConfigureMockMvc
 class PagoAuthorizationNegativeTest {
 
