@@ -47,5 +47,5 @@ INFO] ------------------------------------------------------------------------
 ## security.yml validation
 
 ```
-PEGA AQUÍ LA SALIDA DE ACTIONLINT (si no imprimió nada, escribe: actionlint printed no errors)
+actionlint printed no errors
 ```
