@@ -22,6 +22,7 @@
 | W11-CP7 | Burn-rate alerts for Catalog and the alerts we chose not to create | done | https://github.com/JuanOliveros2497/sistemas-distribuidos-2026-b-g2/blob/main/11-week/workshop/06-alerts.yml |
 | W11-CP8 | Runbook of `CatalogSearchFastBurn` | done | https://github.com/JuanOliveros2497/sistemas-distribuidos-2026-b-g2/blob/main/11-week/workshop/07-runbook.md |
 | W11-CP9 | Drill: MongoDB slow under the search, with postmortem and three stories | done | https://github.com/JuanOliveros2497/sistemas-distribuidos-2026-b-g2/blob/main/11-week/workshop/08-incident.md |
+| W11-DOCS | Microservices documentation: communication, event and data ownership pages, and the booking service in `05-architecture/microservices` | done | https://github.com/code-corhuila/property-docs/pull/150, https://github.com/code-corhuila/property-docs/pull/152 |
 
 ## 2. My individual contribution
 - Mapped the search journey and how the trace crosses from Booking to Catalog through the outbox and RabbitMQ.
@@ -30,6 +31,7 @@
 - Wrote the metric catalog, with the labels that must stay out (city, property id).
 - Set three SLOs for the search (one of them for how fresh the availability is), their burn-rate alerts and the runbook of the page.
 - Ran a drill where MongoDB slows down; the postmortem found that a re-seed can drop the indexes, and turned it into three user stories.
+- Wrote the `docs(microservices)` pull requests of my services: https://github.com/code-corhuila/property-docs/pull/150, https://github.com/code-corhuila/property-docs/pull/152 (merged).
 
 ## 3. Blockers and risks
 - Catalog is not built yet; the module runs on in-memory data.
@@ -44,9 +46,11 @@
 - [ ] Per-environment HU branch + PR to that environment (hu-xxx-dev -> develop, ...) — *(individual workshop in my fork)*
 - [x] Testable acceptance criteria
 - [x] Tests added/updated (unit / integration) — *(`tests/test_trace_propagation.py`)*
-- [ ] DDD / hexagonal boundaries respected (domain has no I/O)
+- [ ] DDD / hexagonal boundaries respected (domain has no I/O) — *(no domain code this week)*
 - [x] No secrets; config via environment variables
 
 ## 6. Evidence links
 - Workshop: https://github.com/JuanOliveros2497/sistemas-distribuidos-2026-b-g2/tree/main/11-week/workshop
+- Commits of the workshop in my fork: https://github.com/JuanOliveros2497/sistemas-distribuidos-2026-b-g2/commits/main/11-week
+- Microservices documentation pull requests: https://github.com/code-corhuila/property-docs/pull/150, https://github.com/code-corhuila/property-docs/pull/152
 - property-docs: https://github.com/code-corhuila/property-docs
